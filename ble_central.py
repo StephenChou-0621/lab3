@@ -67,8 +67,16 @@ def main():
         sys.exit("No device found")
     target = devices[int(input("Enter device number: "))]
 
-    print("Connecting to", target.addr)
-    dev = Peripheral(target.addr, target.addrType)
+    # Connecting often fails in a crowded 2.4GHz environment, so retry a few times
+    for attempt in range(1, 4):
+        print("Connecting to %s (try %d/3)" % (target.addr, attempt))
+        try:
+            dev = Peripheral(target.addr, target.addrType)
+            break
+        except BTLEException as e:
+            print("Connect failed:", e)
+    else:
+        sys.exit("Could not connect. Restart bluetooth and try again.")
     dev.setDelegate(NotifyDelegate())
 
     try:
